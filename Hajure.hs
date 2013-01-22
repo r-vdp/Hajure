@@ -28,6 +28,9 @@ parseHajure = parse sexpr ""
 (<++>) :: Parser [a] -> Parser [a] -> Parser [a]
 (<++>) = liftA2 (++)
 
+(<:>) :: Parser a -> Parser [a] -> Parser [a]
+(<:>) = liftA2 (:)
+
 identifier :: Parser (Element String)
 identifier = Ident <$> (many1 letter <++> many (alphaNum <|> char '_'))
 
@@ -48,11 +51,13 @@ operator = Op . pure <$> (   char '+'
 element :: Parser (Element String)
 element = identifier
       <|> number
-      <|> operator
       <|> sexpr
 
 sexpr :: Parser (Element String)
-sexpr = Nested . SExpr <$> sexprFormat (element `sepEndBy` separators1)
+sexpr = Nested . SExpr <$> sexprFormat body
+  where body  = start <:> rest
+        start = operator <|> element
+        rest  = separators1 *> element `sepEndBy` separators1
 
 sexprFormat :: Parser a -> Parser a
 sexprFormat   = between (open <* separators) close
