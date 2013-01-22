@@ -19,8 +19,6 @@ instance Show a => Show (SExpr a) where
     where showElements = join . intersperse " " . embrace
           embrace      = map (\x -> "{" ++ show x ++ "}")
 
-type SExprParser a = Parser (SExpr a)
-
 
 parseHajure :: String -> Either ParseError (Element String)
 parseHajure = parse sexpr ""
