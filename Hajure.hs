@@ -1,53 +1,70 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# OPTIONS_GHC -Wall #-}
 
 module Hajure where
 
-import Data.Function
+import Control.Monad
+import Data.List
 import Numeric
 
 import ApplicativeParsec
 
 
-newtype SExpr a = SExpr { unwrap :: [a] }
-  deriving (Show, Read, Functor, Applicative, Monad)
+data Element a = Nested (SExpr a) | Ident a | Num a | Op a
+  deriving Show
+
+newtype SExpr a = SExpr { unwrap :: [Element a] }
+
+instance Show a => Show (SExpr a) where
+  show (SExpr xs) = "S( " ++ (showElements xs) ++ " )"
+    where showElements = join . intersperse " " . embrace
+          embrace      = map (\x -> "{" ++ show x ++ "}")
 
 type SExprParser a = Parser (SExpr a)
 
-append :: SExpr a -> SExpr a -> SExpr a
-append = fmap SExpr . (++) `on` unwrap
 
-cons :: a -> SExpr a -> SExpr a
-cons a s = SExpr (a : unwrap s)
+parseHajure :: String -> Either ParseError (Element String)
+parseHajure = parse sexpr ""
 
-parseHajure :: String -> Either ParseError (SExpr String)
-parseHajure = parse hajure ""
+(<++>) :: Parser [a] -> Parser [a] -> Parser [a]
+(<++>) = liftA2 (++)
 
-hajure :: SExprParser String
-hajure = sexpr operator number
+identifier :: Parser (Element String)
+identifier = Ident <$> (many1 letter <++> many (alphaNum <|> char '_'))
 
-sexpr :: Parser String -> Parser String -> SExprParser String
-sexpr = list (char '(') (char ')')
-
-list :: Parser open   ->
-        Parser close  ->
-        Parser String ->
-        Parser String ->
-        SExprParser String
-list open close h t =
-  between (open <* spaces) close $
-    cons <$> (h <* spaces) <*> (SExpr <$> (t `sepEndBy` spaces))
-
-number :: Parser String
-number = show <$> do
+number :: Parser (Element String)
+number = Num . show <$> do
   s <- getInput
   case readSigned readFloat s of
     [(n,s')] -> n <$ setInput s'
     _        -> empty
 
-operator :: Parser String
-operator = pure <$> (   char '+'
-                    <|> char '-'
-                    <|> char '*'
-                    <|> char '/'
-                    )
+operator :: Parser (Element String)
+operator = Op . pure <$> (   char '+'
+                         <|> char '-'
+                         <|> char '*'
+                         <|> char '/'
+                         )
+
+element :: Parser (Element String)
+element = identifier
+      <|> number
+      <|> operator
+      <|> sexpr
+
+sexpr :: Parser (Element String)
+sexpr = Nested . SExpr <$> sexprFormat (element `sepEndBy` separators1)
+
+sexprFormat :: Parser a -> Parser a
+sexprFormat   = between (open <* separators) close
+  where open  = char '('
+        close = char ')'
+
+separator :: Parser Char
+separator = space <|> newline
+
+separators :: Parser String
+separators = many separator
+
+separators1 :: Parser String
+separators1 = many1 separator
 
