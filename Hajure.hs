@@ -15,7 +15,7 @@ data Element a = Nested (SExpr a) | Ident a | Num a | Op a
 newtype SExpr a = SExpr { unwrap :: [Element a] }
 
 instance Show a => Show (SExpr a) where
-  show (SExpr xs) = "S( " ++ (showElements xs) ++ " )"
+  show (SExpr xs) = "S( " ++ showElements xs ++ " )"
     where showElements = join . intersperse " " . embrace
           embrace      = map (\x -> "{" ++ show x ++ "}")
 

@@ -1,12 +1,8 @@
 
-module ApplicativeParsec
-  ( module Control.Applicative
-  , module Text.Parsec.Prim
-  , module Text.ParserCombinators.Parsec
-  ) where
+module ApplicativeParsec (module X) where
 
-import Control.Applicative
+import Control.Applicative as X
 
-import Text.Parsec.Prim hiding (many, try, runParser, (<|>))
-import Text.ParserCombinators.Parsec hiding (many, optional, (<|>))
+import Text.Parsec.Prim as X hiding (many, try, runParser, (<|>))
+import Text.ParserCombinators.Parsec as X hiding (many, optional, (<|>))
 
