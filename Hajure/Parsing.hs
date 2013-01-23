@@ -12,9 +12,6 @@ parseHajure = parse sexpr ""
 (<++>) :: Parser [a] -> Parser [a] -> Parser [a]
 (<++>) = liftA2 (++)
 
-(<:>) :: Parser a -> Parser [a] -> Parser [a]
-(<:>) = liftA2 (:)
-
 identifier :: Parser (Element String)
 identifier = Ident <$> (many1 letter <++> many (alphaNum <|> char '_'))
 
