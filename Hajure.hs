@@ -59,15 +59,14 @@ list = List <$> between' open close separators (element `sepEndBy` separators1)
 
 element :: Parser (Element String)
 element = identifier
+      <|> operator
       <|> number
       <|> list
       <|> sexpr
 
 sexpr :: Parser (Element String)
 sexpr = Nested . SExpr <$> sexprFormat body
-  where body  = start <:> rest
-        start = operator <|> element
-        rest  = (separators1 *> element `sepEndBy` separators1) <|> pure []
+  where body  = element `sepEndBy` separators1
 
 sexprFormat :: Parser a -> Parser a
 sexprFormat   = between' open close separators
