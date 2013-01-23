@@ -1,27 +1,10 @@
 
-module Hajure (parseHajure) where
+module Parsing.Hajure (parseHajure) where
 
-import Control.Monad
-import Data.List
 import Numeric
 
 import ApplicativeParsec
-
-
-data Element a = Nested (SExpr a)
-               | Ident a
-               | Num a
-               | Op a
-               | List [Element a]
-  deriving Show
-
-newtype SExpr a = SExpr { unwrap :: [Element a] }
-
-instance Show a => Show (SExpr a) where
-  show (SExpr xs) = "S( " ++ showElements xs ++ " )"
-    where showElements = join . intersperse " " . embrace
-          embrace      = map (\x -> "{" ++ show x ++ "}")
-
+import Hajure.Data
 
 parseHajure :: String -> Either ParseError (Element String)
 parseHajure = parse sexpr ""
