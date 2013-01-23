@@ -1,6 +1,5 @@
-{-# OPTIONS_GHC -Wall #-}
 
-module Hajure where
+module Hajure (parseHajure) where
 
 import Control.Monad
 import Data.List
@@ -34,10 +33,13 @@ identifier = Ident <$> (many1 letter <++> many (alphaNum <|> char '_'))
 
 number :: Parser (Element String)
 number = Num . show <$> do
-  s <- getInput
-  case readSigned readFloat s of
-    [(n,s')] -> n <$ setInput s'
-    _        -> empty
+    s <- getInput
+    case doRead s of
+      [(n,s')] -> n <$ setInput s'
+      _        -> empty
+  where
+    doRead :: ReadS Double
+    doRead = readSigned readFloat
 
 operator :: Parser (Element String)
 operator = Op . pure <$> (   char '+'
