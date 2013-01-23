@@ -8,7 +8,11 @@ import Numeric
 import ApplicativeParsec
 
 
-data Element a = Nested (SExpr a) | Ident a | Num a | Op a
+data Element a = Nested (SExpr a)
+               | Ident a
+               | Num a
+               | Op a
+               | List [Element a]
   deriving Show
 
 newtype SExpr a = SExpr { unwrap :: [Element a] }
@@ -48,21 +52,30 @@ operator = Op . pure <$> (   char '+'
                          <|> char '/'
                          )
 
+list :: Parser (Element String)
+list = List <$> between' open close separators (element `sepEndBy` separators1)
+  where open  = char '['
+        close = char ']'
+
 element :: Parser (Element String)
 element = identifier
       <|> number
+      <|> list
       <|> sexpr
 
 sexpr :: Parser (Element String)
 sexpr = Nested . SExpr <$> sexprFormat body
   where body  = start <:> rest
         start = operator <|> element
-        rest  = separators1 *> element `sepEndBy` separators1
+        rest  = (separators1 *> element `sepEndBy` separators1) <|> pure []
 
 sexprFormat :: Parser a -> Parser a
-sexprFormat   = between (open <* separators) close
+sexprFormat   = between' open close separators
   where open  = char '('
         close = char ')'
+
+between' :: Parser open -> Parser close -> Parser sep -> Parser a -> Parser a
+between' open close sep = between (open <* sep) close
 
 separator :: Parser Char
 separator = space <|> newline
