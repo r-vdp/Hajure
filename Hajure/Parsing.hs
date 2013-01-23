@@ -1,5 +1,5 @@
 
-module Parsing.Hajure (parseHajure) where
+module Hajure.Parsing (parseHajure) where
 
 import Numeric
 
