@@ -2,6 +2,7 @@
 module Hajure.Data (Element(..), SExpr(..)) where
 
 import Control.Applicative (liftA2)
+import Control.Monad (join)
 import Data.List (intercalate)
 
 data Element a = Nested (SExpr a)
@@ -14,7 +15,7 @@ data Element a = Nested (SExpr a)
 newtype SExpr a = SExpr { unwrap :: [Element a] }
 
 instance Show a => Show (SExpr a) where
-  show = unlines . showExpr "" ""
+  show = unlines . join showExpr ""
 
 chld :: String
 chld = "|-- "
@@ -34,14 +35,16 @@ showExpr acc1 acc2 e = start : body e ++ end
         body  = map (showElem acc2) . unwrap
         end   = [acc2 ++ ")"]
 
+showExpr' :: Show a => String -> SExpr a -> [String]
+showExpr' = liftA2 showExpr withChld withNxt
+
 showElem :: Show a => String -> Element a -> String
-showElem acc (Ident a)  = showAsChild acc a
-showElem acc (Num a)    = showAsChild acc a
-showElem acc (Op a)     = showAsChild acc a
 showElem acc (List as)  = showAsChild acc as
-showElem acc (Nested e) = unlines' . show' acc $ e
-  where show'    = liftA2 showExpr withChld withNxt
-        unlines' = intercalate "\n"
+showElem acc (Nested e) = unlines' . showExpr' acc $ e
+showElem acc e          = showAsChild acc e
+
+unlines' :: [String] -> String
+unlines' = intercalate "\n"
 
 showAsChild :: Show a => String -> a -> String
 showAsChild acc a = withChld acc ++ show a
