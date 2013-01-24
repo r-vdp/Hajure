@@ -5,7 +5,7 @@
   (fun 
     2 
     3.4
-    (nest + 2 (list 3 4) (lis 1 2))
+    (nest + 2 (list 3 4) (list' 1 2))
   )
   r
 )

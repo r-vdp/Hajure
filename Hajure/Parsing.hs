@@ -13,7 +13,10 @@ parseHajure = parse sexpr ""
 (<++>) = liftA2 (++)
 
 identifier :: Parser (Element String)
-identifier = Ident <$> (many1 letter <++> many (alphaNum <|> char '_'))
+identifier = Ident <$> (many1 letter <++> many identifierChar)
+
+identifierChar :: Parser Char
+identifierChar = alphaNum <|> char '_' <|> char '\''
 
 number :: Parser (Element String)
 number = Num . show <$> do
