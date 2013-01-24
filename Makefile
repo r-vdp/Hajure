@@ -1,7 +1,19 @@
 
-all: compile
+GHC = ghc -outputdir /tmp -rtsopts -O2 -Wall -Werror Hajure.hs -o runHajure
+
+all: forceCompile
 	@echo "All done"
 
+forceCompile:
+	${GHC} -fforce-recomp
+
 compile:
-	ghc -outputdir /tmp -O2 -Wall -Werror -fforce-recomp Hajure.hs -o runHajure
+	${GHC}
+
+internal_run:
+	./runHajure +RTS -sstderr -RTS test.cl
+
+run: compile internal_run
+
+frun: forceCompile internal_run
 
