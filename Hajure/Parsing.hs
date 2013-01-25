@@ -1,53 +1,56 @@
 
 module Hajure.Parsing (parseHajure) where
 
-import Numeric
+import Data.Text.Lazy (Text)
+import qualified Data.Text.Lazy as T
+import Data.Text.Lazy.Builder (toLazyText)
+import Data.Text.Lazy.Builder.RealFloat
+import Data.Text.Lazy.Read
 
 import ApplicativeParsec
 import Hajure.Data
 
-parseHajure :: String -> Either ParseError (Element String)
+parseHajure :: Text -> Either ParseError TextElem
 parseHajure = parse sexpr ""
 
 (<++>) :: Parser [a] -> Parser [a] -> Parser [a]
 (<++>) = liftA2 (++)
 
-identifier :: Parser (Element String)
-identifier = Ident <$> (many1 letter <++> many identifierChar)
+identifier :: Parser TextElem
+identifier = Ident . T.concat <$> (many1 (T.singleton <$> letter) <++> many identifierChar)
 
-identifierChar :: Parser Char
-identifierChar = alphaNum <|> char '_' <|> char '\''
+identifierChar :: Parser Text
+identifierChar = T.singleton <$> (alphaNum <|> char '_' <|> char '\'')
 
-number :: Parser (Element String)
-number = Num . show <$> do
-    s <- getInput
-    case doRead s of
-      [(n,s')] -> n <$ setInput s'
-      _        -> empty
-  where
-    doRead :: ReadS Double
-    doRead = readSigned readFloat
+number :: Parser TextElem
+number = Num <$> (getInput >>= parseNum)
+  where parseNum       = either doLeft doRight . signed double
+        doRight (n,s') = packFloat n <$ setInput s'
+        doLeft  _      = empty
 
-operator :: Parser (Element String)
-operator = Op . pure <$> (   char '+'
-                         <|> char '-'
-                         <|> char '*'
-                         <|> char '/'
-                         )
+packFloat :: RealFloat a => a -> Text
+packFloat = toLazyText . realFloat
 
-list :: Parser (Element String)
+operator :: Parser TextElem
+operator = Op . T.singleton <$> (char '+'
+                            <|>  char '-'
+                            <|>  char '*'
+                            <|>  char '/'
+                            )
+
+list :: Parser TextElem
 list = List <$> between' open close separators (element `sepEndBy` separators1)
   where open  = char '['
         close = char ']'
 
-element :: Parser (Element String)
+element :: Parser TextElem
 element = identifier
-      <|> operator
       <|> number
+      <|> operator
       <|> list
       <|> sexpr
 
-sexpr :: Parser (Element String)
+sexpr :: Parser TextElem
 sexpr = Nested . SExpr <$> sexprFormat body
   where body  = element `sepEndBy` separators1
 
@@ -59,12 +62,12 @@ sexprFormat   = between' open close separators
 between' :: Parser open -> Parser close -> Parser sep -> Parser a -> Parser a
 between' open close sep = between (open <* sep) close
 
-separator :: Parser Char
-separator = space <|> newline
+separator :: Parser Text
+separator = T.singleton <$> (space <|> newline)
 
-separators :: Parser String
-separators = many separator
+separators :: Parser Text
+separators = T.concat <$> many separator
 
-separators1 :: Parser String
-separators1 = many1 separator
+separators1 :: Parser Text
+separators1 = T.concat <$> many1 separator
 

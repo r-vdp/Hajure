@@ -1,10 +1,10 @@
-{-# LANGUAGE PatternGuards #-}
+{-# LANGUAGE PatternGuards, OverloadedStrings #-}
 
 module Hajure.AST (listify) where
 
 import Hajure.Data
 
-listify :: Element String -> Element String
+listify :: TextElem -> TextElem
 listify (Nested (SExpr xs'@(x:xs)))
   | Ident e <- x
   , e == "list"   = List (map listify xs)
