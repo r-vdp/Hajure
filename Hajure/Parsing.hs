@@ -1,11 +1,12 @@
 
 module Hajure.Parsing (parseHajure) where
 
-import Data.Text.Lazy (Text)
-import qualified Data.Text.Lazy as T
+import Data.Text (Text)
+import qualified Data.Text as T
+import Data.Text.Lazy (toStrict)
 import Data.Text.Lazy.Builder (toLazyText)
 import Data.Text.Lazy.Builder.RealFloat
-import Data.Text.Lazy.Read
+import Data.Text.Read
 
 import ApplicativeParsec
 import Hajure.Data
@@ -13,14 +14,20 @@ import Hajure.Data
 parseHajure :: Text -> Either ParseError TextElem
 parseHajure = parse sexpr ""
 
-(<++>) :: Parser [a] -> Parser [a] -> Parser [a]
-(<++>) = liftA2 (++)
+(<:>) :: Parser a -> Parser [a] -> Parser [a]
+(<:>) = liftA2 (:)
 
 identifier :: Parser TextElem
-identifier = Ident . T.concat <$> (many1 (T.singleton <$> letter) <++> many identifierChar)
+identifier = Ident . T.concat <$> identifierHead <:> many identifierTail
 
-identifierChar :: Parser Text
-identifierChar = T.singleton <$> (alphaNum <|> char '_' <|> char '\'')
+identifierHead :: Parser Text
+identifierHead = T.singleton <$> identifierHead'
+
+identifierHead' :: Parser Char
+identifierHead' = letter <|> char '_'
+
+identifierTail :: Parser Text
+identifierTail = T.singleton <$> (identifierHead' <|> digit <|> char '\'')
 
 number :: Parser TextElem
 number = Num <$> (getInput >>= parseNum)
@@ -29,7 +36,7 @@ number = Num <$> (getInput >>= parseNum)
         doLeft  _      = empty
 
 packFloat :: RealFloat a => a -> Text
-packFloat = toLazyText . realFloat
+packFloat = toStrict . toLazyText . realFloat
 
 operator :: Parser TextElem
 operator = Op . T.singleton <$> (char '+'

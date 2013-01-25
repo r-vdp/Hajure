@@ -4,7 +4,7 @@ module Hajure.Data (Element(..), SExpr(..), TextElem) where
 import Control.Applicative (liftA2)
 import Control.Monad (join)
 import Data.List (intercalate)
-import Data.Text.Lazy (Text)
+import Data.Text (Text)
 
 data Element a = Nested (SExpr a)
                | Ident  a

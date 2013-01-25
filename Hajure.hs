@@ -4,8 +4,8 @@ module Main where
 import Control.Applicative ((<$>))
 import Control.Monad ((<=<))
 import Data.Maybe (listToMaybe, fromMaybe)
-import Data.Text.Lazy (Text)
-import Data.Text.Lazy.IO (hGetContents)
+import Data.Text (Text)
+import Data.Text.IO (hGetContents)
 import System.Environment
 import System.IO hiding (hGetContents)
 
@@ -17,7 +17,7 @@ import Hajure.Parsing
 type ParseResult = Either ParseError TextElem
 
 main :: IO ()
-main = getFilePath <$> getArgs >>= parseFile 
+main = parseFile =<< getFilePath <$> getArgs
 
 getFilePath :: [FilePath] -> FilePath
 getFilePath = fromMaybe noFile . listToMaybe
