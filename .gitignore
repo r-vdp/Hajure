@@ -7,4 +7,6 @@ cabal-dev
 .virthualenv
 
 runHajure
+runHajure.hp
+runHajure.svg
 
