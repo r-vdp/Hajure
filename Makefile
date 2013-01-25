@@ -17,3 +17,10 @@ run: compile internal_run
 
 frun: forceCompile internal_run
 
+profile: compile
+	./runHajure +RTS -sstderr -hT -RTS test.cl
+
+svg: profile
+	hp2pretty runHajure.hp
+	eog runHajure.svg
+
