@@ -14,20 +14,17 @@ import Hajure.Data
 parseHajure :: Text -> Either ParseError TextElem
 parseHajure = parse sexpr ""
 
-(<:>) :: Parser a -> Parser [a] -> Parser [a]
-(<:>) = liftA2 (:)
+(<:>) :: Parser Char -> Parser Text -> Parser Text
+(<:>) = liftA2 T.cons
 
 identifier :: Parser TextElem
-identifier = Ident . T.concat <$> identifierHead <:> many identifierTail
+identifier = Ident <$> identifierHead <:> identifierTail
 
-identifierHead :: Parser Text
-identifierHead = T.singleton <$> identifierHead'
-
-identifierHead' :: Parser Char
-identifierHead' = letter <|> char '_'
+identifierHead :: Parser Char
+identifierHead = letter <|> char '_'
 
 identifierTail :: Parser Text
-identifierTail = T.singleton <$> (identifierHead' <|> digit <|> char '\'')
+identifierTail = T.pack <$> many (identifierHead <|> digit <|> char '\'')
 
 number :: Parser TextElem
 number = Num <$> (getInput >>= parseNum)
