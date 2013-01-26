@@ -1,30 +1,27 @@
 
-module Hajure.Data (Element(..), SExpr(..), TextElem) where
+module Hajure.Data (Element(..), SExpr(..)) where
 
 import Control.Applicative (liftA2)
 import Control.Monad (join)
 import Data.List (intercalate)
 import Data.Text (Text)
 
-data Element a = Nested (SExpr a)
-               | Ident  a
-               | Num    a
-               | Op     a
-               | List   [Element a]
-  deriving Show
+data Element = Nested SExpr
+             | Ident  Text
+             | Num    Double
+             | Op     Text
+             | List   [Element]
+  deriving (Show, Eq)
 
-newtype SExpr a = SExpr { unwrap :: [Element a] }
+newtype SExpr = SExpr { unwrap :: [Element] }
+  deriving Eq
 
-instance Show a => Show (SExpr a) where
+instance Show SExpr where
   show = unlines . join showExpr ""
 
-type TextElem = Element Text
 
-
-chld :: String
+chld, nxt :: String
 chld = "|-- "
-
-nxt :: String
 nxt  = "|   "
 
 withChld :: String -> String
@@ -33,17 +30,17 @@ withChld = (++ chld)
 withNxt :: String -> String
 withNxt  = (++ nxt)
 
-showExpr :: Show a => String -> String -> SExpr a -> [String]
+showExpr :: String -> String -> SExpr -> [String]
 showExpr acc1 acc2 e = start : body e ++ end
   where start = acc1 ++ "S("
         body  = map (showElem acc2) . unwrap
         end   = [acc2 ++ ")"]
 
-showExpr' :: Show a => String -> SExpr a -> [String]
+showExpr' :: String -> SExpr -> [String]
 showExpr' = liftA2 showExpr withChld withNxt
 
-showElem :: Show a => String -> Element a -> String
-showElem acc (List as)  = showAsChild acc as
+showElem :: String -> Element -> String
+showElem acc (List es)  = showAsChild acc es
 showElem acc (Nested e) = unlines' . showExpr' acc $ e
 showElem acc e          = showAsChild acc e
 

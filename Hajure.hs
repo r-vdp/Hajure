@@ -14,7 +14,7 @@ import Hajure.AST
 import Hajure.Data
 import Hajure.Parsing
 
-type ParseResult = Either ParseError TextElem
+type ParseResult = Either ParseError Element
 
 main :: IO ()
 main = parseFile =<< getFilePath <$> getArgs
@@ -32,7 +32,7 @@ parse = fmap listify . parseHajure
 printResult :: ParseResult -> IO ()
 printResult = either print printSExpr
 
-printSExpr :: Show a => Element a -> IO ()
+printSExpr :: Element -> IO ()
 printSExpr (Nested sexpr) = print sexpr
 printSExpr e              = print e
 

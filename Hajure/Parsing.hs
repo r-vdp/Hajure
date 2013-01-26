@@ -3,21 +3,18 @@ module Hajure.Parsing (parseHajure) where
 
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Text.Lazy (toStrict)
-import Data.Text.Lazy.Builder (toLazyText)
-import Data.Text.Lazy.Builder.RealFloat
 import Data.Text.Read
 
 import ApplicativeParsec
 import Hajure.Data
 
-parseHajure :: Text -> Either ParseError TextElem
+parseHajure :: Text -> Either ParseError Element
 parseHajure = parse sexpr ""
 
-(<:>) :: Parser Char -> Parser Text -> Parser Text
+(<:>) :: Applicative f => f Char -> f Text -> f Text
 (<:>) = liftA2 T.cons
 
-identifier :: Parser TextElem
+identifier :: Parser Element
 identifier = Ident <$> identifierHead <:> identifierTail
 
 identifierHead :: Parser Char
@@ -26,35 +23,32 @@ identifierHead = letter <|> char '_'
 identifierTail :: Parser Text
 identifierTail = T.pack <$> many (identifierHead <|> digit <|> char '\'')
 
-number :: Parser TextElem
+number :: Parser Element
 number = Num <$> (getInput >>= parseNum)
   where parseNum       = either doLeft doRight . signed double
-        doRight (n,s') = packFloat n <$ setInput s'
+        doRight (n,s') = n <$ setInput s'
         doLeft  _      = empty
 
-packFloat :: RealFloat a => a -> Text
-packFloat = toStrict . toLazyText . realFloat
-
-operator :: Parser TextElem
+operator :: Parser Element
 operator = Op . T.singleton <$> (char '+'
                             <|>  char '-'
                             <|>  char '*'
                             <|>  char '/'
                             )
 
-list :: Parser TextElem
+list :: Parser Element
 list = List <$> between' open close separators (element `sepEndBy` separators1)
   where open  = char '['
         close = char ']'
 
-element :: Parser TextElem
+element :: Parser Element
 element = identifier
       <|> number
       <|> operator
       <|> list
       <|> sexpr
 
-sexpr :: Parser TextElem
+sexpr :: Parser Element
 sexpr = Nested . SExpr <$> sexprFormat body
   where body  = element `sepEndBy` separators1
 
