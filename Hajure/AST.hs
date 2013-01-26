@@ -9,9 +9,12 @@ import Hajure.Data
 
 -- |
 -- >>> let n  = Nested (SExpr [Ident "list", Num 3, Num 4])
--- >>> listify n
--- List [Num 3.0,Num 4.0]
--- >>> (listify . listify) n
+-- >>> let n' = listify n
+-- >>> listify n == n'
+-- True
+-- >>> listify n' == n'
+-- True
+-- >>> print n'
 -- List [Num 3.0,Num 4.0]
 
 listify :: Element -> Element
