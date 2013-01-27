@@ -1,5 +1,8 @@
 
-module Hajure.Data (Element(..), SExpr(..)) where
+module Hajure.Data
+  ( Element(..)
+  , SExpr(..)
+  ) where
 
 import Control.Applicative (liftA2)
 import Control.Monad (join)

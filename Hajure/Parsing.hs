@@ -8,6 +8,14 @@ import Data.Text.Read
 import ApplicativeParsec
 import Hajure.Data
 
+-- $setup
+-- >>> :set -XOverloadedStrings
+
+-- |
+-- >>> let i = "(+ 2 3 [test 2])" :: Text
+-- >>> let o = Nested (SExpr [Op "+", Num 2, Num 3, List [Ident "test", Num 2]])
+-- >>> either (error . show) (== o) $ parseHajure i
+-- True
 parseHajure :: Text -> Either ParseError Element
 parseHajure = parse sexpr ""
 

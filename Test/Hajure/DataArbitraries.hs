@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Test.Hajure.DataArbitraries where
+module Test.Hajure.DataArbitraries () where
 
 import Control.Applicative
 import Data.Text (Text)
