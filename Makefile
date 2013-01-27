@@ -1,5 +1,5 @@
 
-GHC = ghc -outputdir /tmp -rtsopts -O2 -Wall -Werror Hajure.hs -o runHajure
+GHC = ghc -outputdir /tmp -rtsopts -O2 -Wall -Werror Hajure.hs Tests.hs -o runHajure
 
 all: forceCompile
 	@echo "All done"
@@ -23,4 +23,7 @@ profile: compile
 svg: profile
 	hp2pretty runHajure.hp
 	eog runHajure.svg
+
+test: forceCompile
+	doctest Tests.hs
 
