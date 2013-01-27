@@ -35,7 +35,7 @@ instance Arbitrary SExpr where
 
 listFunctor :: Int -> Gen Element
 listFunctor f = Nested . SExpr <$> listIdent <:> elems1 f
-  where listIdent = pure . Ident $ "list"
+  where listIdent = pure (Ident "list")
 
 elems :: Int -> Gen [Element]
 elems = listOf . arbitrary'
@@ -53,8 +53,11 @@ initLetter :: Gen Char
 initLetter = elements (['a'..'z'] ++ ['A'..'Z'])
 
 letter :: Gen Char
-letter = frequency [(5,initLetter), (1,pure '_'), (1,pure '\'')]
+letter = frequency [ (5, initLetter)
+                   , (1, pure '_')
+                   , (1, pure '\'')
+                   ]
 
 operator :: Gen Text
-operator = elements $ ["+", "-", "*", "/"]
+operator = elements ["+", "-", "*", "/"]
 
