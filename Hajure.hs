@@ -9,10 +9,10 @@ import Data.Text.IO (hGetContents)
 import System.Environment
 import System.IO hiding (hGetContents)
 
-import ApplicativeParsec (ParseError)
 import Hajure.AST
 import Hajure.Data
 import Hajure.Parsing
+import ParsecImports (ParseError)
 
 type ParseResult = Either ParseError Element
 

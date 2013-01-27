@@ -1,5 +1,5 @@
 
-module ApplicativeParsec (module X) where
+module ParsecImports (module X) where
 
 import Control.Applicative as X
 

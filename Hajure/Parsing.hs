@@ -5,8 +5,8 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Text.Read
 
-import ApplicativeParsec
 import Hajure.Data
+import ParsecImports
 
 -- $setup
 -- >>> :set -XOverloadedStrings
