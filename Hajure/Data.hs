@@ -41,28 +41,28 @@ showExpr acc1 acc2 e = start : body e ++ end
         body  = map (showElem acc2) . unwrap
         end   = [acc2 ++ ")"]
 
-showExpr' :: String -> SExpr -> String
-showExpr' acc  = unlines' . lifted acc
-  where lifted = liftA2 showExpr withChld withNxt
-
 showElem :: String -> Element -> String
 showElem acc (List es)  = showList    acc es
 showElem acc (Nested e) = showExpr'   acc e
 showElem acc e          = showAsChild acc e
 
-unlines' :: [String] -> String
-unlines' = intercalate "\n"
-
 showAsChild :: Show a => String -> a -> String
 showAsChild acc a = withChld acc ++ show a
 
+showWith :: (String -> String -> a -> [String]) -> String -> a -> String
+showWith f acc   = unlines' . lifted acc
+  where lifted   = liftA2 f withChld withNxt
+        unlines' = intercalate "\n"
+
+showExpr' :: String -> SExpr -> String
+showExpr' = showWith showExpr
+
 showList :: String -> [Element] -> String
-showList acc = unlines' . showListElems (acc ++ chld) (acc ++ nxt)
+showList = showWith showListElems
 
 showListElems :: String -> String -> [Element] -> [String]
 showListElems acc1 acc2 es = start : showElems es ++ end
   where showElems = map (showElem acc2)
         start     = acc1 ++ "["
         end       = [acc2 ++ "]"]
-
 
