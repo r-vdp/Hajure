@@ -37,6 +37,9 @@ printElements :: [Element] -> IO ()
 printElements = mapM_ printElement
 
 printElement :: Element -> IO ()
-printElement (Nested sexpr) = print sexpr
-printElement e              = print e
+printElement (Nested sexpr) = prettyPrint sexpr
+printElement e              = prettyPrint e
+
+prettyPrint :: PrettyShow a => a -> IO ()
+prettyPrint = putStrLn . pshow
 

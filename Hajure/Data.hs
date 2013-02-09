@@ -2,6 +2,8 @@
 module Hajure.Data
   ( Element(..)
   , SExpr(..)
+  , PrettyShow
+  , pshow
   ) where
 
 import Prelude hiding (showList)
@@ -16,20 +18,24 @@ data Element = Nested SExpr
              | Num    Double
              | Op     Text
              | List   [Element]
-  deriving Eq
-
-instance Show Element where
-  show (Nested s) = show s
-  show (List   l) = emptyAcc showListElems l
-  show (Ident  i) = "Ident " ++ show i
-  show (Num    n) = "Num "   ++ show n
-  show (Op     o) = "Op "    ++ show o
+  deriving (Eq, Show)
 
 newtype SExpr = SExpr { unwrap :: [Element] }
-  deriving Eq
+  deriving (Eq, Show)
 
-instance Show SExpr where
-  show = emptyAcc showExpr
+
+class PrettyShow a where
+  pshow :: a -> String
+
+instance PrettyShow Element where
+  pshow (Nested s) = pshow s
+  pshow (List   l) = emptyAcc showListElems l
+  pshow (Ident  i) = "Ident " ++ show i
+  pshow (Num    n) = "Num "   ++ show n
+  pshow (Op     o) = "Op "    ++ show o
+
+instance PrettyShow SExpr where
+  pshow = emptyAcc showExpr
 
 emptyAcc :: (String -> String -> a -> [String]) -> a -> String
 emptyAcc f = unlines . join f ""
