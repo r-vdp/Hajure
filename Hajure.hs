@@ -14,7 +14,7 @@ import Hajure.Data
 import Hajure.Parsing
 import ParsecImports (ParseError)
 
-type ParseResult = Either ParseError Element
+type ParseResult = Either ParseError [Element]
 
 main :: IO ()
 main = parseFile =<< getFilePath <$> getArgs
@@ -27,12 +27,16 @@ parseFile :: FilePath -> IO ()
 parseFile fp = withFile fp ReadMode (printResult . parse <=< hGetContents)
 
 parse :: Text -> ParseResult
-parse = fmap listify . parseHajure
+parse = fmap listifyAll . parseHajure
+  where listifyAll = map listify
 
 printResult :: ParseResult -> IO ()
-printResult = either print printSExpr
+printResult = either print printElements
 
-printSExpr :: Element -> IO ()
-printSExpr (Nested sexpr) = print sexpr
-printSExpr e              = print e
+printElements :: [Element] -> IO ()
+printElements = mapM_ printElement
+
+printElement :: Element -> IO ()
+printElement (Nested sexpr) = print sexpr
+printElement e              = print e
 

@@ -9,7 +9,7 @@ import Hajure.Parsing ()
 import Test.Hajure.DataArbitraries ()
 
 -- |
--- prop> not . hasListFunctor . listify
+-- prop> not . hasListFunctor . listify :: Element -> Bool
 hasListFunctor :: Element -> Bool
 hasListFunctor (Nested (SExpr (e:es))) = e == Ident "list" ||
                                          any hasListFunctor es
