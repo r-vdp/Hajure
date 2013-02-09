@@ -11,7 +11,7 @@ import Prelude hiding (showList)
 import Control.Applicative (liftA2)
 import Control.Monad (join)
 import Data.List (intercalate)
-import Data.Text (Text)
+import Data.Text (Text, unpack)
 
 data Element = Nested SExpr
              | Ident  Text
@@ -30,9 +30,9 @@ class PrettyShow a where
 instance PrettyShow Element where
   pshow (Nested s) = pshow s
   pshow (List   l) = emptyAcc showListElems l
-  pshow (Ident  i) = "Ident " ++ show i
-  pshow (Num    n) = "Num "   ++ show n
-  pshow (Op     o) = "Op "    ++ show o
+  pshow (Ident  i) = "Ident " ++ unpack i
+  pshow (Num    n) = "Num "   ++ show   n
+  pshow (Op     o) = "Op "    ++ unpack o
 
 instance PrettyShow SExpr where
   pshow = emptyAcc showExpr
@@ -58,12 +58,12 @@ showExpr acc1 acc2 e = start : body e ++ end
         end   = [acc2 ++ ")"]
 
 showElem :: String -> Element -> String
-showElem acc (List es)  = showList    acc es
-showElem acc (Nested e) = showExpr'   acc e
-showElem acc e          = showAsChild acc e
+showElem acc (List   es) = showList    acc es
+showElem acc (Nested e ) = showExpr'   acc e
+showElem acc e           = showAsChild acc e
 
-showAsChild :: Show a => String -> a -> String
-showAsChild acc a = withChld acc ++ show a
+showAsChild :: PrettyShow a => String -> a -> String
+showAsChild acc a = withChld acc ++ pshow a
 
 showWith :: (String -> String -> a -> [String]) -> String -> a -> String
 showWith f acc    = unlines' . lifted f acc
@@ -79,6 +79,6 @@ showList = showWith showListElems
 showListElems :: String -> String -> [Element] -> [String]
 showListElems acc1 acc2 es = start : showElems es ++ end
   where showElems = map (showElem acc2)
-        start     = acc1 ++ "["
+        start     =  acc1 ++ "["
         end       = [acc2 ++ "]"]
 
