@@ -16,13 +16,23 @@ data Element = Nested SExpr
              | Num    Double
              | Op     Text
              | List   [Element]
-  deriving (Show, Eq)
+  deriving Eq
+
+instance Show Element where
+  show (Nested s) = show s
+  show (List   l) = emptyAcc showListElems l
+  show (Ident  i) = "Ident " ++ show i
+  show (Num    n) = "Num "   ++ show n
+  show (Op     o) = "Op "    ++ show o
 
 newtype SExpr = SExpr { unwrap :: [Element] }
   deriving Eq
 
 instance Show SExpr where
-  show = unlines . join showExpr ""
+  show = emptyAcc showExpr
+
+emptyAcc :: (String -> String -> a -> [String]) -> a -> String
+emptyAcc f = unlines . join f ""
 
 
 chld, nxt :: String
@@ -50,9 +60,9 @@ showAsChild :: Show a => String -> a -> String
 showAsChild acc a = withChld acc ++ show a
 
 showWith :: (String -> String -> a -> [String]) -> String -> a -> String
-showWith f acc   = unlines' . lifted acc
-  where lifted   = liftA2 f withChld withNxt
-        unlines' = intercalate "\n"
+showWith f acc    = unlines' . lifted f acc
+  where lifted f' = liftA2 f' withChld withNxt
+        unlines'  = intercalate "\n"
 
 showExpr' :: String -> SExpr -> String
 showExpr' = showWith showExpr
