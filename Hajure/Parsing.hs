@@ -46,9 +46,10 @@ operator = Op . T.singleton <$> (char '+'
                             )
 
 list :: Parser Element
-list = List <$> between' open close separators (element `sepEndBy` separators1)
-  where open  = char '['
-        close = char ']'
+list = List <$> between' open close separators elements
+  where open     = char '['
+        close    = char ']'
+        elements = element `sepEndBy` separators1
 
 element :: Parser Element
 element = identifier
