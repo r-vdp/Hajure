@@ -21,7 +21,7 @@ main = parseFile =<< getFilePath <$> getArgs
 
 getFilePath :: [FilePath] -> FilePath
 getFilePath = fromMaybe noFile . listToMaybe
-  where noFile = error "No file given!"
+  where noFile = error "Usage: runHajure <file.cl>"
 
 parseFile :: FilePath -> IO ()
 parseFile fp = withFile fp ReadMode (printResult . parse <=< hGetContents)
