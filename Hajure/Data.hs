@@ -4,7 +4,6 @@
 
 module Hajure.Data
   ( Element(..)
-  , Wrapped
   , SExpr
   , mkSexpr
   , sexprView
