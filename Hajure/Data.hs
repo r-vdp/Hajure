@@ -1,6 +1,7 @@
 
 module Hajure.Data
-  ( Element(..)
+  ( HParser
+  , Element(..)
   , SExpr(..)
   , PrettyShow
   , pshow
@@ -8,10 +9,14 @@ module Hajure.Data
 
 import Prelude hiding (showList)
 
-import Control.Applicative (liftA2)
 import Control.Monad (join)
 import Data.List (intercalate)
 import Data.Text (Text, unpack)
+
+import ParsecImports
+
+type HParser = Parsec Text ()
+
 
 data Element = Nested SExpr
              | Ident  Text

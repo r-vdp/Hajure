@@ -23,62 +23,62 @@ parseHajure = parse parser ""
 (<:>) :: Applicative f => f Char -> f Text -> f Text
 (<:>) = liftA2 T.cons
 
-identifier :: Parser Element
+identifier :: HParser Element
 identifier = Ident <$> identifierHead <:> identifierTail
 
-identifierHead :: Parser Char
+identifierHead :: HParser Char
 identifierHead = letter <|> char '_'
 
-identifierTail :: Parser Text
+identifierTail :: HParser Text
 identifierTail = T.pack <$> many (identifierHead <|> digit <|> char '\'')
 
-number :: Parser Element
+number :: HParser Element
 number = Num <$> (getInput >>= parseNum)
   where parseNum       = either doLeft doRight . signed double
         doRight (n,s') = n <$ setInput s'
         doLeft  _      = empty
 
-operator :: Parser Element
+operator :: HParser Element
 operator = Op . T.singleton <$> (char '+'
                             <|>  char '-'
                             <|>  char '*'
                             <|>  char '/'
                             )
 
-list :: Parser Element
+list :: HParser Element
 list = List <$> between' open close separators elements
   where open     = char '['
         close    = char ']'
         elements = element `sepEndBy` separators1
 
-element :: Parser Element
+element :: HParser Element
 element = identifier
       <|> number
       <|> operator
       <|> list
       <|> nestedSExpr
 
-sexpr :: Parser SExpr
+sexpr :: HParser SExpr
 sexpr = SExpr <$> sexprFormat body
   where body  = element `sepEndBy` separators1
 
-nestedSExpr :: Parser Element
+nestedSExpr :: HParser Element
 nestedSExpr = Nested <$> sexpr
 
-sexprFormat :: Parser a -> Parser a
+sexprFormat :: HParser a -> HParser a
 sexprFormat   = between' open close separators
   where open  = char '('
         close = char ')'
 
-between' :: Parser open -> Parser close -> Parser sep -> Parser a -> Parser a
+between' :: HParser open -> Parser close -> Parser sep -> Parser a -> Parser a
 between' open close sep = between (open <* sep) close
 
-separator :: Parser Text
+separator :: HParser Text
 separator = T.singleton <$> (space <|> newline)
 
-separators :: Parser Text
+separators :: HParser Text
 separators = T.concat <$> many separator
 
-separators1 :: Parser Text
+separators1 :: HParser Text
 separators1 = T.concat <$> many1 separator
 
