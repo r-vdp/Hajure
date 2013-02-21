@@ -1,5 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
 module Test.Hajure.DataArbitraries () where
 
@@ -24,7 +26,7 @@ instance Arbitrary' Element where
     where f' = f * 5
 
 instance Arbitrary' SExpr where
-  arbitrary' f = SExpr <$> elems1 f
+  arbitrary' f = mkSexpr <$> elems1 f
 
 instance Arbitrary Element where
   arbitrary = arbitrary' 1
@@ -34,7 +36,7 @@ instance Arbitrary SExpr where
 
 
 listFunctor :: Int -> Gen Element
-listFunctor f = Nested . SExpr <$> listIdent <:> elems1 f
+listFunctor f = Nested . mkSexpr <$> listIdent <:> elems1 f
   where listIdent = pure (Ident "list")
 
 elems :: Int -> Gen [Element]

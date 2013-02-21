@@ -27,8 +27,8 @@ parseFile :: FilePath -> IO ()
 parseFile fp = withFile fp ReadMode (printResult . parse <=< hGetContents)
 
 parse :: Text -> ParseResult
-parse = fmap listifyAll . parseHajure
-  where listifyAll = map listify
+parse = fmap transform . parseHajure
+  where transform = map (listify . funify)
 
 printResult :: ParseResult -> IO ()
 printResult = either print printElements

@@ -16,6 +16,9 @@
   5.6e-2
   -5.7e-2
   [ expr_inList (+ 3 4) (list 4 5) [1 2 3]]
+
+  (defun foobar (a b c) (+ (+ a b) c))
+
 )
 
 (* 2 3 [ 2 3 7 80 -5 ])
