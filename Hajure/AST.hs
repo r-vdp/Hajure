@@ -67,7 +67,7 @@ toDefun :: SExpr -> Maybe Element
 toDefun s
   | [Ident d, Ident i, Nested (sexprView -> is'), Nested b] <- sexprView s
   , d == "defun"
-  , Just is <- mapM toIdent is' = Just (Fun i is (fmap funify b))
+  , Just is <- mapM toIdent is' = Just (Fun i is (funify <$> b))
   | otherwise                   = Nothing
 
 toIdent :: Element -> Maybe Identifier
