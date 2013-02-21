@@ -26,8 +26,23 @@ instance Listifiable Element where
 
 instance Listifiable SExpr where
   listify (SExpr xs'@(x:xs))
-    | Ident e <- x
-    , e == "list"  = List (map listify xs)
-    | otherwise    = Nested . SExpr . map listify $ xs'
-  listify s        = Nested s
+    | isList x  = List (map listify xs)
+    | otherwise = Nested . SExpr . map listify $ xs'
+  listify s     = Nested s
+
+isList :: Element -> Bool
+isList x
+  | Ident i <- x
+  , i == "list"  = True
+  | otherwise    = False
+
+-- Walk the AST with a State monad to gather all functions and then walk it again to substitute them??
+-- what about scopes and functions which reference other functions? (Fix points needed!)
+{--
+isDefun :: Element -> Bool
+isDefun x
+  | Ident i <- x
+  , i == "defun" = True
+  | otherwise    = False
+--}
 
