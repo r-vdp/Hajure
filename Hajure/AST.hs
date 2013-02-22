@@ -49,7 +49,8 @@ instance AST Element where
   renameM (List xs)    = List <$> mapM renameM xs
   renameM (Ident i)    = Ident <$> nextUnique i
   renameM (Fun i is s) = Fun <$> nextUnique i
-                             <*> (pushScope *> mapM newUnique is)
+                             <*  pushScope
+                             <*> mapM newUnique is
                              <*> renameM s
                              <*  popScope
   renameM e            = pure e
