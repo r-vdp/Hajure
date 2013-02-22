@@ -15,7 +15,7 @@ import Hajure.Data
 import Hajure.Parsing
 import ParsecImports (ParseError)
 
-type ParseResult = Either ParseError ([Element], [(Identifier, Identifier)])
+type ParseResult = Either ParseError ([Element], Mappings)
 
 main :: IO ()
 main = parseFile =<< getFilePath <$> getArgs
@@ -32,7 +32,7 @@ parse = fmap transform . parseHajure
   where transform = rename . map (listify . funify)
 
 printResult :: ParseResult -> IO ()
-printResult = either print (sequenceP . (printElements *** print))
+printResult = either print (sequenceP . (printElements *** printMappings))
 
 printElements :: [Element] -> IO ()
 printElements = mapM_ printElement
@@ -40,6 +40,9 @@ printElements = mapM_ printElement
 printElement :: Element -> IO ()
 printElement (Nested sexpr) = prettyPrint sexpr
 printElement e              = prettyPrint e
+
+printMappings :: Mappings -> IO ()
+printMappings = (putStrLn "\n\nName Mappings:\n" >>) . prettyPrint
 
 prettyPrint :: PrettyShow a => a -> IO ()
 prettyPrint = putStrLn . pshow

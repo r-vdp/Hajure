@@ -66,7 +66,7 @@ instance AST SExpr where
 
   renameM = sequenceA . fmap renameM
 
-rename :: AST a => [a] -> ([a], [(Identifier, Identifier)])
+rename :: AST a => [a] -> ([a], Mappings)
 rename = runUnique . mapM renameM
 
 isList :: Element -> Bool

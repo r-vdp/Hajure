@@ -27,13 +27,10 @@ newtype Scope = Scope (Map Identifier Identifier)
 
 type UState = (Integer, [Scope])
 
-type LogItem = (Identifier, Identifier)
-type Log = [LogItem]
-
-newtype Unique a = Unique { runUnique' :: WriterT Log (State UState) a }
+newtype Unique a = Unique { runUnique' :: WriterT Mappings (State UState) a }
   deriving (Monad, Applicative, Functor)
 
-runUnique :: Unique a -> (a, Log)
+runUnique :: Unique a -> (a, Mappings)
 runUnique = flip evalState empty . runWriterT . runUnique'
   where empty = (-1, [])
 
@@ -79,8 +76,8 @@ modifyState = Unique . modify
 getsState :: (UState -> a) -> Unique a
 getsState = Unique . gets
 
-tellMapping :: LogItem -> Unique ()
-tellMapping = Unique . tell . (:[])
+tellMapping :: Mapping -> Unique ()
+tellMapping = Unique . tell . Mappings . (:[])
 
 getScopes :: Unique [Scope]
 getScopes = getsState snd

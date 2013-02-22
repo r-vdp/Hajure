@@ -7,6 +7,8 @@ module Hajure.Data
   , SExpr
   , mkSexpr
   , sexprView
+  , Mapping
+  , Mappings(..)
   , Identifier
   , PrettyShow
   , pshow
@@ -18,6 +20,7 @@ import Control.Monad (join)
 
 import Data.Foldable (Foldable)
 import Data.List (intercalate)
+import Data.Monoid
 import Data.Text (Text, unpack)
 import Data.Traversable (Traversable)
 
@@ -45,8 +48,18 @@ mkSexpr = Wrapped
 sexprView :: SExpr -> [Element]
 sexprView = unwrap
 
+type Mapping = (Identifier, Identifier)
+
+newtype Mappings  = Mappings { toMappings :: [Mapping] }
+  deriving (Show, Monoid)
+
+
 class PrettyShow a where
   pshow :: a -> String
+
+instance PrettyShow Mappings where
+  pshow = unlines . map showMapping . toMappings
+    where showMapping (i, i') = unpack i' ++ " -> " ++ unpack i
 
 instance PrettyShow Element where
   pshow (Nested   s) = pshow s
