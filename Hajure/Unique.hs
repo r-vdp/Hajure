@@ -52,7 +52,7 @@ newUnique i = do
 
 withNew :: Unique ([Identifier] -> a -> b)
         -> [Identifier] -> Unique a -> Unique b
-withNew f is m = pushScope *> (f <*> mapM newUnique is <*> m) <* popScope
+withNew f is m = (f <* pushScope) <*> mapM newUnique is <*> m <* popScope
 
 pushScope :: Unique ()
 pushScope = modifyState (second (Scope M.empty :))
