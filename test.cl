@@ -1,5 +1,5 @@
 
-  
+(defun list (a b c d e) ([a b c d e])) 
 
 (+ 
   (list 4 5) 
@@ -17,7 +17,11 @@
   -5.7e-2
   [ expr_inList (+ 3 4) (list 4 5) [1 2 3]]
 
+  a
+
   (defun foobar (a b c) (+ (+ a b) c))
+
+  (defun listTest (a b c d e f) (list a b c d e f g))
 
 )
 
@@ -30,5 +34,7 @@
 
 
 
-( list 3 5    7 4     4 2 8 (+ 4 5)   7 0 )
+( list 3 5    7 4  a b khuh  4 2 8 (+ 4 5 a t a)   7 0 ewe
+    (defun funTest (b khuh) (list b khuh))       
+)
 

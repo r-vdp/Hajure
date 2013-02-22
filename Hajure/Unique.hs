@@ -4,8 +4,9 @@
 
 module Hajure.Unique
   ( Unique
-  , evalUnique
+  , runUnique
   , nextUnique
+  , newUnique
   , pushScope
   , popScope
   ) where
@@ -13,6 +14,7 @@ module Hajure.Unique
 import Control.Applicative ((*>), Applicative)
 import Control.Arrow (first, second)
 import Control.Monad.State
+import Control.Monad.Writer
 
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -25,22 +27,31 @@ newtype Scope = Scope (Map Identifier Identifier)
 
 type UState = (Integer, [Scope])
 
-newtype Unique a = Unique { runUnique :: State UState a }
+type LogItem = (Identifier, Identifier)
+type Log = [LogItem]
+
+newtype Unique a = Unique { runUnique' :: WriterT Log (State UState) a }
   deriving (Monad, Applicative, Functor)
 
-evalUnique :: Unique a -> a
-evalUnique = flip evalState empty . runUnique
+runUnique :: Unique a -> (a, Log)
+runUnique = flip evalState empty . runWriterT . runUnique'
   where empty = (-1, [])
 
 nextUnique :: Identifier -> Unique Identifier
 nextUnique i = do
-  s <- getsState snd
+  s <- getScopes
   case findIdent i s of
     Just u -> return u
     _      -> do
       i' <- nextIdent
-      modifyState (second (addIdent i i'))
+      add i i'
       return i'
+
+newUnique :: Identifier -> Unique Identifier
+newUnique i = do
+  i' <- nextIdent
+  add i i'
+  return i'
 
 pushScope :: Unique ()
 pushScope = modifyState (second (Scope M.empty :))
@@ -67,4 +78,13 @@ modifyState = Unique . modify
 
 getsState :: (UState -> a) -> Unique a
 getsState = Unique . gets
+
+tellMapping :: LogItem -> Unique ()
+tellMapping = Unique . tell . (:[])
+
+getScopes :: Unique [Scope]
+getScopes = getsState snd
+
+add :: Identifier -> Identifier -> Unique ()
+add i i' = tellMapping (i,i') >> modifyState (second (addIdent i i'))
 

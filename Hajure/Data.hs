@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 
@@ -15,8 +15,11 @@ module Hajure.Data
 import Prelude hiding (showList)
 
 import Control.Monad (join)
+
+import Data.Foldable (Foldable)
 import Data.List (intercalate)
 import Data.Text (Text, unpack)
+import Data.Traversable (Traversable)
 
 import ParsecImports
 
@@ -32,7 +35,7 @@ data Element = Nested SExpr
   deriving (Eq, Show)
 
 newtype Wrapped a = Wrapped { unwrap :: [a] }
-  deriving (Show, Eq, Functor)
+  deriving (Show, Eq, Functor, Foldable, Traversable)
 
 type SExpr = Wrapped Element
 

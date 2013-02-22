@@ -7,11 +7,16 @@
 module Hajure.AST
   ( listify
   , funify
+  , rename
   ) where
 
-import Control.Applicative ((<$>))
+import Control.Applicative
+
+import Data.List (sort)
+import Data.Traversable (sequenceA)
 
 import Hajure.Data
+import Hajure.Unique
 
 
 -- $setup
@@ -29,6 +34,7 @@ import Hajure.Data
 class AST a where
   listify :: a -> Element
   funify  :: a -> Element
+  renameM :: a -> Unique a
 
 instance AST Element where
   listify (Nested s) = listify s
@@ -38,6 +44,15 @@ instance AST Element where
   funify (Nested s) = funify s
   funify (List xs)  = List (map funify xs)
   funify e          = e
+
+  renameM (Nested s)   = Nested <$> (pushScope *> renameM s <* popScope)
+  renameM (List xs)    = List <$> mapM renameM xs
+  renameM (Ident i)    = Ident <$> nextUnique i
+  renameM (Fun i is s) = Fun <$> nextUnique i
+                             <*> (pushScope *> mapM newUnique is)
+                             <*> renameM s
+                             <*  popScope
+  renameM e            = pure e
 
 instance AST SExpr where
   listify s@(sexprView -> (x:xs))
@@ -49,6 +64,10 @@ instance AST SExpr where
     | Just f <- toDefun s = f
     | otherwise           = Nested (funify <$> s)
 
+  renameM = sequenceA . fmap renameM
+
+rename :: AST a => [a] -> ([a], [(Identifier, Identifier)])
+rename = runUnique . mapM renameM
 
 isList :: Element -> Bool
 isList x
@@ -56,11 +75,13 @@ isList x
   , i == "list"  = True
   | otherwise    = False
 
+-- TODO return error msg if argument list not unique (sort guard)
 toDefun :: SExpr -> Maybe Element
 toDefun s
   | [Ident d, Ident i, Nested (sexprView -> is'), Nested b] <- sexprView s
   , d == "defun"
-  , Just is <- mapM toIdent is' = Just (Fun i is (funify <$> b))
+  , Just is <- mapM toIdent is'
+  , sort is == is               = Just (Fun i is (funify <$> b))
   | otherwise                   = Nothing
 
 toIdent :: Element -> Maybe Identifier
