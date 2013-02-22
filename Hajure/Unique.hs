@@ -54,9 +54,9 @@ addIdent i i' []             = [Scope (M.insert i i' M.empty)]
 
 findIdent :: Identifier -> [Scope] -> Maybe Identifier
 findIdent i (Scope s : ss)
-  | Just u  <- M.lookup i s = Just u
-  | otherwise               = findIdent i ss
-findIdent _ []              = Nothing
+  | Just u <- M.lookup i s = Just u
+  | otherwise              = findIdent i ss
+findIdent _ []             = Nothing
 
 nextIdent :: Unique Identifier
 nextIdent = modifyState (first (+1)) *> getsState asIdent
