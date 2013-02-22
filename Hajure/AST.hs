@@ -48,11 +48,7 @@ instance AST Element where
   renameM (Nested s)   = Nested <$> (pushScope *> renameM s <* popScope)
   renameM (List xs)    = List <$> mapM renameM xs
   renameM (Ident i)    = Ident <$> nextUnique i
-  renameM (Fun i is s) = Fun <$> nextUnique i
-                             <*  pushScope
-                             <*> mapM newUnique is
-                             <*> renameM s
-                             <*  popScope
+  renameM (Fun i is s) = withNew (Fun <$> nextUnique i) is (renameM s)
   renameM e            = pure e
 
 instance AST SExpr where

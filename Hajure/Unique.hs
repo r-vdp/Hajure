@@ -6,12 +6,12 @@ module Hajure.Unique
   ( Unique
   , runUnique
   , nextUnique
-  , newUnique
+  , withNew
   , pushScope
   , popScope
   ) where
 
-import Control.Applicative ((*>), Applicative)
+import Control.Applicative
 import Control.Arrow (first, second)
 import Control.Monad.State
 import Control.Monad.Writer
@@ -31,8 +31,8 @@ newtype Unique a = Unique { runUnique' :: WriterT Mappings (State UState) a }
   deriving (Monad, Applicative, Functor)
 
 runUnique :: Unique a -> (a, Mappings)
-runUnique = flip evalState empty . runWriterT . runUnique'
-  where empty = (-1, [])
+runUnique = flip evalState emptyState . runWriterT . runUnique'
+  where emptyState = (-1, [])
 
 nextUnique :: Identifier -> Unique Identifier
 nextUnique i = do
@@ -49,6 +49,10 @@ newUnique i = do
   i' <- nextIdent
   add i i'
   return i'
+
+withNew :: Unique ([Identifier] -> a -> b)
+        -> [Identifier] -> Unique a -> Unique b
+withNew f is m = pushScope *> (f <*> mapM newUnique is <*> m) <* popScope
 
 pushScope :: Unique ()
 pushScope = modifyState (second (Scope M.empty :))
