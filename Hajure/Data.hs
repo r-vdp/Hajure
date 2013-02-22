@@ -20,25 +20,6 @@ import Data.Text (Text, unpack)
 
 import ParsecImports
 
-{--
-newtype IdentState = IdentState { fromState :: Integer }
-  deriving Show
-
-emptyIdentState :: IdentState
-emptyIdentState = IdentState (-1)
-
-nextIdent :: HParser Text
-nextIdent = asText <$> (modifyState succIdent *> getState)
-  where succIdent = IdentState . (+1) . fromState
-        asText    = pack . ("$x" ++) . show . fromState
-
-type Source  = Text
-
-type HParser = Parsec Source IdentState
-
-runHParser :: HParser a -> SourceName -> Source -> Either ParseError a
-runHParser = flip runParser emptyIdentState
---}
 
 type Identifier = Text
 
