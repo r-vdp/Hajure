@@ -37,22 +37,11 @@ runUnique = flip evalState emptyState . runWriterT . runUnique'
 nextUnique :: Identifier -> Unique Identifier
 nextUnique i = do
   s <- getScopes
-  case findIdent i s of
-    Just u -> return u
-    _      -> do
-      i' <- nextIdent
-      add i i'
-      return i'
-
-newUnique :: Identifier -> Unique Identifier
-newUnique i = do
-  i' <- nextIdent
-  add i i'
-  return i'
+  maybe (newUnique i) return (findIdent i s)
 
 withNew :: Unique ([Identifier] -> a -> b)
         -> [Identifier] -> Unique a -> Unique b
-withNew f is m = (f <* pushScope) <*> mapM newUnique is <*> m <* popScope
+withNew f is m = f <* pushScope <*> mapM newUnique is <*> m <* popScope
 
 pushScope :: Unique ()
 pushScope = modifyState (second (Scope M.empty :))
@@ -60,14 +49,14 @@ pushScope = modifyState (second (Scope M.empty :))
 popScope :: Unique ()
 popScope = modifyState (second (drop 1))
 
-addIdent :: Identifier -> Identifier -> [Scope] -> [Scope]
-addIdent i i' (Scope s : ss) = (Scope (M.insert i i' s)) : ss
-addIdent i i' []             = [Scope (M.insert i i' M.empty)]
+newUnique :: Identifier -> Unique Identifier
+newUnique i = do
+  i' <- nextIdent
+  addMapping i i'
+  return i'
 
 findIdent :: Identifier -> [Scope] -> Maybe Identifier
-findIdent i (Scope s : ss)
-  | Just u <- M.lookup i s = Just u
-  | otherwise              = findIdent i ss
+findIdent i (Scope s : ss) = M.lookup i s <|> findIdent i ss
 findIdent _ []             = Nothing
 
 nextIdent :: Unique Identifier
@@ -86,6 +75,10 @@ tellMapping = Unique . tell . Mappings . (:[])
 getScopes :: Unique [Scope]
 getScopes = getsState snd
 
-add :: Identifier -> Identifier -> Unique ()
-add i i' = tellMapping (i,i') >> modifyState (second (addIdent i i'))
+addMapping :: Identifier -> Identifier -> Unique ()
+addMapping i i' = tellMapping (i,i') >> modifyState (second (addIdent i i'))
+
+addIdent :: Identifier -> Identifier -> [Scope] -> [Scope]
+addIdent i i' (Scope s : ss) = (Scope (M.insert i i' s)) : ss
+addIdent i i' []             = [Scope (M.insert i i' M.empty)]
 
