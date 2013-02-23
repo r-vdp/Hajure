@@ -44,10 +44,10 @@ withNew :: Unique ([Identifier] -> a -> b)
 withNew f is m = f <* pushScope <*> mapM newUnique is <*> m <* popScope
 
 pushScope :: Unique ()
-pushScope = modifyState (second (Scope M.empty :))
+pushScope = modifyScopes (Scope M.empty :)
 
 popScope :: Unique ()
-popScope = modifyState (second (drop 1))
+popScope = modifyScopes (drop 1)
 
 newUnique :: Identifier -> Unique Identifier
 newUnique i = do
@@ -60,11 +60,15 @@ findIdent i (Scope s : ss) = M.lookup i s <|> findIdent i ss
 findIdent _ []             = Nothing
 
 nextIdent :: Unique Identifier
-nextIdent = modifyState (first (+1)) *> getsState asIdent
-  where asIdent = ("$x" `append`) . pack . show . fst
+nextIdent = increment *> getsState asIdent
+  where asIdent   = ("$x" `append`) . pack . show . fst
+        increment = modifyState (first (+1))
 
 modifyState :: (UState -> UState) -> Unique ()
 modifyState = Unique . modify
+
+modifyScopes :: ([Scope] -> [Scope]) -> Unique ()
+modifyScopes = modifyState . second
 
 getsState :: (UState -> a) -> Unique a
 getsState = Unique . gets
@@ -76,7 +80,7 @@ getScopes :: Unique [Scope]
 getScopes = getsState snd
 
 addMapping :: Identifier -> Identifier -> Unique ()
-addMapping i i' = tellMapping (i,i') >> modifyState (second (addIdent i i'))
+addMapping i i' = tellMapping (i,i') >> modifyScopes (addIdent i i')
 
 addIdent :: Identifier -> Identifier -> [Scope] -> [Scope]
 addIdent i i' (Scope s : ss) = (Scope (M.insert i i' s)) : ss
