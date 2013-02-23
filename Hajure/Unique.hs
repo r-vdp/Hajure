@@ -80,7 +80,7 @@ getScopes :: Unique [Scope]
 getScopes = getsState snd
 
 addMapping :: Identifier -> Identifier -> Unique ()
-addMapping i i' = tellMapping (i,i') >> modifyScopes (addIdent i i')
+addMapping i i' = tellMapping (i,i') *> modifyScopes (addIdent i i')
 
 addIdent :: Identifier -> Identifier -> [Scope] -> [Scope]
 addIdent i i' (Scope s : ss) = (Scope (M.insert i i' s)) : ss
