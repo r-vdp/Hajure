@@ -13,7 +13,7 @@ module Hajure.AST
 import Control.Applicative
 
 import Data.List (sort)
-import Data.Traversable (sequenceA)
+import Data.Traversable (traverse)
 
 import Hajure.Data
 import Hajure.Unique
@@ -46,7 +46,7 @@ instance AST Element where
   funify e          = e
 
   renameM (Nested s)   = Nested <$> (pushScope *> renameM s <* popScope)
-  renameM (List xs)    = List <$> mapM renameM xs
+  renameM (List xs)    = List <$> traverse renameM xs
   renameM (Ident i)    = Ident <$> nextUnique i
   renameM (Fun i is s) = withNew (Fun <$> nextUnique i) is (renameM s)
   renameM e            = pure e
@@ -61,10 +61,10 @@ instance AST SExpr where
     | Just f <- toDefun s = f
     | otherwise           = Nested (funify <$> s)
 
-  renameM = sequenceA . fmap renameM
+  renameM = traverse renameM
 
 rename :: AST a => [a] -> ([a], Mappings)
-rename = runUnique . mapM renameM
+rename = runUnique . traverse renameM
 
 isList :: Element -> Bool
 isList x
@@ -77,7 +77,7 @@ toDefun :: SExpr -> Maybe Element
 toDefun s
   | [Ident d, Ident i, Nested (sexprView -> is'), Nested b] <- sexprView s
   , d == "defun"
-  , Just is <- mapM toIdent is'
+  , Just is <- traverse toIdent is'
   , sort is == is               = Just (Fun i is (funify <$> b))
   | otherwise                   = Nothing
 

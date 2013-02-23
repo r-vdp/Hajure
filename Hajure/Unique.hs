@@ -19,6 +19,7 @@ import Control.Monad.Writer
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Text (pack, append)
+import Data.Traversable (traverse)
 
 import Hajure.Data
 
@@ -41,7 +42,7 @@ nextUnique i = do
 
 withNew :: Unique ([Identifier] -> a -> b)
         -> [Identifier] -> Unique a -> Unique b
-withNew f is m = f <* pushScope <*> mapM newUnique is <*> m <* popScope
+withNew f is m = f <* pushScope <*> traverse newUnique is <*> m <* popScope
 
 pushScope :: Unique ()
 pushScope = modifyScopes (Scope M.empty :)
