@@ -1,7 +1,7 @@
 
 module Main where
 
-import Control.Applicative ((<$>))
+import Control.Applicative
 import Control.Arrow ((***))
 import Control.Monad ((<=<))
 import Data.Maybe (listToMaybe, fromMaybe)
@@ -25,10 +25,10 @@ getFilePath = fromMaybe noFile . listToMaybe
   where noFile = error "Usage: runHajure <file.cl>"
 
 parseFile :: FilePath -> IO ()
-parseFile fp = withFile fp ReadMode (printResult . parse <=< hGetContents)
+parseFile fp = withFile fp ReadMode (printResult . parse fp <=< hGetContents)
 
-parse :: Text -> ParseResult
-parse = fmap transform . parseHajure
+parse :: FilePath -> Text -> ParseResult
+parse fp = fmap transform . parseHajure fp
   where transform = rename . map (listify . funify)
 
 printResult :: ParseResult -> IO ()
@@ -47,6 +47,6 @@ printMappings = (putStrLn "\n\nName Mappings:\n" >>) . prettyPrint
 prettyPrint :: PrettyShow a => a -> IO ()
 prettyPrint = putStrLn . pshow
 
-sequenceP :: Monad m => (m (), m ()) -> m ()
-sequenceP (m, m') = m >> m'
+sequenceP :: Applicative m => (m (), m ()) -> m ()
+sequenceP = uncurry (*>)
 

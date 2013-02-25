@@ -16,9 +16,11 @@ import ParsecImports
 -- >>> let o = mkSexpr [Op "+", Num 2, Num 3, List [Ident "test", Num 2]]
 -- >>> either (error . show) (== [o]) $ parseHajure i
 -- True
-parseHajure :: Text -> Either ParseError [SExpr]
-parseHajure = parse parser ""
-  where parser = separators *> sexpr `sepEndBy` separators <* eof
+parseHajure :: String -> Text -> Either ParseError [SExpr]
+parseHajure = parse toplevel
+
+toplevel :: Parser [SExpr]
+toplevel = separators *> sexpr `sepEndBy` separators <* eof
 
 (<:>) :: Applicative f => f Char -> f Text -> f Text
 (<:>) = liftA2 T.cons
