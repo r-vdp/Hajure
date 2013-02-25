@@ -67,16 +67,13 @@ rename :: AST a => [a] -> ([a], Mappings)
 rename = runUnique . traverse renameM
 
 isList :: Element -> Bool
-isList x
-  | Ident i <- x
-  , i == "list"  = True
-  | otherwise    = False
+isList (Ident "list") = True
+isList _              = False
 
 -- TODO return error msg if argument list not unique (sort guard)
 toDefun :: SExpr -> Maybe Element
 toDefun s
-  | [Ident d, Ident i, Nested (sexprView -> is'), Nested b] <- sexprView s
-  , d == "defun"
+  | [Ident "defun", Ident i, Nested (sexprView -> is'), Nested b] <- sexprView s
   , Just is <- traverse toIdent is'
   , sort is == is               = Just (Fun i is (funify <$> b))
   | otherwise                   = Nothing
