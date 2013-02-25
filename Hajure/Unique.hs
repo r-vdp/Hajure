@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE PatternGuards #-}
 
 module Hajure.Unique
   ( Unique
@@ -84,6 +83,6 @@ addMapping :: Identifier -> Identifier -> Unique ()
 addMapping i i' = tellMapping (i,i') *> modifyScopes (addIdent i i')
 
 addIdent :: Identifier -> Identifier -> [Scope] -> [Scope]
-addIdent i i' (Scope s : ss) = (Scope (M.insert i i' s)) : ss
+addIdent i i' (Scope s : ss) =  Scope (M.insert i i' s) : ss
 addIdent i i' []             = [Scope (M.insert i i' M.empty)]
 
