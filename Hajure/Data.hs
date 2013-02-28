@@ -97,9 +97,10 @@ showExpr acc1 acc2 e = start : body e ++ end
         end   = [acc2 ++ ")"]
 
 showElem :: String -> Element -> String
-showElem acc (List   es) = showList    acc es
-showElem acc (Nested e ) = showExpr'   acc e
-showElem acc e           = showAsChild acc e
+showElem acc (List es)    = showList    acc es
+showElem acc (Nested e)   = showExpr'   acc e
+showElem acc (Fun i is s) = showFun'    acc i is s
+showElem acc e            = showAsChild acc e
 
 showAsChild :: PrettyShow a => String -> a -> String
 showAsChild acc a = withChld acc ++ pshow a
@@ -108,11 +109,14 @@ showWith :: (String -> String -> a -> [String]) -> String -> a -> String
 showWith f acc    = unlines' . lifted f acc
   where lifted f' = liftA2 f' withChld withNxt
 
+showList :: String -> [Element] -> String
+showList = showWith showListElems
+
 showExpr' :: String -> SExpr -> String
 showExpr' = showWith showExpr
 
-showList :: String -> [Element] -> String
-showList = showWith showListElems
+showFun' :: String -> Identifier -> [Identifier] -> SExpr -> String
+showFun' acc i is = showWith (\acc1 acc2 -> showFun acc1 acc2 i is) acc
 
 showListElems :: String -> String -> [Element] -> [String]
 showListElems acc1 acc2 es = start : showElems es ++ end
@@ -124,6 +128,6 @@ showFun :: String -> String -> Identifier -> [Identifier] -> SExpr -> [String]
 showFun acc1 acc2 i is s = [start, body, end]
   where start = acc1 ++ "Fun( " ++ unpack i ++ " " ++ args ++ " ->"
         args  = "[ " ++ (unwords . map unpack $ is) ++ " ]"
-        body  = showExpr' (withNxt acc2) s
-        end   = nxt ++ ")"
+        body  = showExpr' acc2 s
+        end   = acc2 ++ ")"
 
