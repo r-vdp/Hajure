@@ -28,7 +28,7 @@
 (* 2 3 [ 2 3 7 80 -5 ])
 
   
-
+(defun recursive (a b c) (if (geq a 3) (recursive (- a 1) b c) a))
 
 
 
