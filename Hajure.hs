@@ -3,7 +3,7 @@ module Main where
 
 import Control.Applicative
 import Control.Arrow ((***))
-import Control.Monad ((<=<))
+import Control.Monad ((<=<), void)
 import Data.Maybe (listToMaybe, fromMaybe)
 import Data.Text (Text)
 import Data.Text.IO (hGetContents)
@@ -47,6 +47,6 @@ printMappings = (putStrLn "\n\nName Mappings:\n" >>) . prettyPrint
 prettyPrint :: PrettyShow a => a -> IO ()
 prettyPrint = putStrLn . pshow
 
-sequenceP :: Applicative m => (m (), m ()) -> m ()
-sequenceP = uncurry (*>)
+sequenceP :: Applicative m => (m a, m b) -> m ()
+sequenceP = void . uncurry (*>)
 
